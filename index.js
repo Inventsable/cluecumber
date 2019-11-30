@@ -30,7 +30,7 @@ async function evalScript(text, defs = {}) {
   if (window.__adobe_cep__)
     return new Promise((resolve, reject) => {
       window.__adobe_cep__.evalScript(`${text}`, res => {
-        if (res) resolve(this.isJson(res) ? JSON.parse(res) : res);
+        if (res) resolve(isJson(res) ? JSON.parse(res) : res);
         else reject({ error: res });
       });
     });
