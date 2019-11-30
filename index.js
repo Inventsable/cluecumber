@@ -25,13 +25,16 @@ function saveDialog(title, filetypes) {
 
 // Promisified wrapper around CSInterface.evalScript
 // Returns a promise/thenable object which is pre-parsed if JSON
-async function evalScript(text) {
-  return new Promise((resolve, reject) => {
-    window.__adobe_cep__.evalScript(`${text}`, res => {
-      if (res) resolve(isJson(res) ? JSON.parse(res) : res);
-      else reject("Error");
+// If not in a CEP panel (and in browser/panelify, return second param as result)
+async function evalScript(text, defs = {}) {
+  if (window.__adobe_cep__)
+    return new Promise((resolve, reject) => {
+      window.__adobe_cep__.evalScript(`${text}`, res => {
+        if (res) resolve(this.isJson(res) ? JSON.parse(res) : res);
+        else reject({ error: res });
+      });
     });
-  });
+  else return defs;
 }
 
 // Loads/executes .jsx script into memory from any path
@@ -39,6 +42,7 @@ function loadScript(path) {
   // Correctly execute regardless of whether Animate or regular CEP app
   if (!/FLPR/.test(spy.appName))
     window.__adobe_cep__.evalScript(`$.evalFile('${fspath.resolve(path)}')`);
+  // Thanks to @adamplouff for below
   else
     window.__adobe_cep__.evalScript(
       `fl.runScript(FLfile.platformPathToURI("${fspath.resolve(path)}"))`
@@ -75,7 +79,7 @@ function makeDir(root) {
             mkdir(parts.join("/"));
             folder.create();
           }`,
-          resolve("Done")
+          resolve(true)
         );
       }).catch(err => {
         reject(err);
@@ -101,6 +105,28 @@ async function writeFile(path, data) {
   });
 }
 
+/**
+ * Converts a RGB color array to hexadecimal format
+ *
+ * @param {array} val          The array of floating values (eg. from shapes.c.k, like below:
+ *                                      [ 0.525490224361, 0.262745112181, 0.262745112181, 1 ]
+ * @param {boolean} hashed     If false, don't prepend # to result
+ *
+ * @return {string}   The final hexademical color string (eg. '#b2bce')
+ */
+function rgbToHex(val, hashed = true) {
+  while (val.length > 3) val.pop();
+  return `${hashed ? "#" : ""}${val
+    .map(c => {
+      return /AEFT/.test(spy.appName) ? (c * 255).toFixed(0) : c;
+    })
+    .map(c => {
+      c = c < 256 ? Math.abs(c).toString(16) : 0;
+      return c.length < 2 ? `0${c}` : c;
+    })
+    .join("")}`;
+}
+
 // Exports all functions needed to be imported from another file.
 // Any of these functions can be imported via:
 //   import { openDialog, saveDialog } from 'cluecumber'
@@ -109,6 +135,7 @@ export {
   saveDialog,
   loadScript,
   evalScript,
+  rgbToHex,
   makeDir,
   readDir,
   writeFile,
