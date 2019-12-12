@@ -1,9 +1,14 @@
+// Need to merge fake/CEP-spy or handle panelify compatibility.
+// For now, just nullify results to prevent browser errors.
+let isBrowser = !window.__adobe_cep__;
+
 let fspath = require("path");
-let spy = require("cep-spy").default;
+let spy = !isBrowser ? require("cep-spy").default : null;
 let fs = require("fs");
 
 // Opens a native open dialog and returns the target folder/file path as obj.path
 function openDialog(title) {
+  if (isBrowser) return null;
   let menu = cep.fs.showOpenDialogEx(true, true, title);
   return menu.err
     ? { err: menu.err, path: null }
@@ -15,6 +20,7 @@ function openDialog(title) {
 // Opens a native save dialog and returns the target file
 // This should append file type, but currently does not
 function saveDialog(title, filetypes) {
+  if (isBrowser) return null;
   let menu = cep.fs.showSaveDialogEx(title, null, filetypes);
   return menu.err
     ? { err: menu.err, path: null }
@@ -27,7 +33,7 @@ function saveDialog(title, filetypes) {
 // Returns a promise/thenable object which is pre-parsed if JSON
 // If not in a CEP panel (and in browser/panelify, return second param as result)
 async function evalScript(text, defs = {}) {
-  if (window.__adobe_cep__)
+  if (!isBrowser)
     return new Promise((resolve, reject) => {
       window.__adobe_cep__.evalScript(`${text}`, res => {
         if (res) resolve(isJson(res) ? JSON.parse(res) : res);
@@ -39,6 +45,7 @@ async function evalScript(text, defs = {}) {
 
 // Loads/executes .jsx script into memory from any path
 function loadScript(path) {
+  if (isBrowser) return null;
   // Correctly execute regardless of whether Animate or regular CEP app
   if (!/FLPR/.test(spy.appName))
     window.__adobe_cep__.evalScript(`$.evalFile('${fspath.resolve(path)}')`);
@@ -62,6 +69,7 @@ function isJson(str) {
 // Should get this working -- native CSEvent dispatch and listeners
 // Currently requires CSInterface be preloaded for CSEvent class
 function dispatchEvent(name, data) {
+  if (isBrowser) return null;
   var event = new CSEvent(name, "APPLICATION");
   event.data = data;
   window.__adobe_cep__.dispatchEvent(event);
@@ -69,6 +77,7 @@ function dispatchEvent(name, data) {
 
 // Should replace this with node's native fs to port into future UXP framework
 function makeDir(root) {
+  if (isBrowser) return null;
   window.cep.fs.readFile(decodeURI(root).replace(/file\:\/{1,}/, "")).err
     ? new Promise((resolve, reject) => {
         window.__adobe_cep__.evalScript(
