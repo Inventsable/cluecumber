@@ -7,9 +7,9 @@ let spy = !isBrowser ? require("cep-spy").default : null;
 let fs = require("fs");
 
 // Opens a native open dialog and returns the target folder/file path as obj.path
-function openDialog(title) {
+function openDialog(title, isFolder = false) {
   if (isBrowser) return null;
-  let menu = cep.fs.showOpenDialogEx(true, true, title);
+  let menu = cep.fs.showOpenDialogEx(true, isFolder, title);
   return menu.err
     ? { err: menu.err, path: null }
     : menu.data.length
