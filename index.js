@@ -17,6 +17,13 @@ function openDialog(title, isFolder = false) {
     : { err: "Canceled", path: null };
 }
 
+function openURL(url) {
+  if (window.__adobe_cep__)
+    cep.util.openURLInDefaultBrowser(url)
+  else
+    window.open(url)
+}
+
 // Opens a native save dialog and returns the target file
 // This should append file type, but currently does not
 function saveDialog(title, filetypes) {
