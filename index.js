@@ -157,6 +157,7 @@ export {
   rgbToHex,
   makeDir,
   readDir,
+  openURL,
   writeFile,
   dispatchEvent
 };
