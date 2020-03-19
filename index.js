@@ -33,13 +33,15 @@ function saveDialog(title, filetypes) {
 // Returns a promise/thenable object which is pre-parsed if JSON
 // If not in a CEP panel (and in browser/panelify, return second param as result)
 async function evalScript(text, defs = {}) {
-  if (!isBrowser)
-    return new Promise((resolve, reject) => {
-      window.__adobe_cep__.evalScript(`${text}`, res => {
-        if (res) resolve(isJson(res) ? JSON.parse(res) : res);
-        else reject({ error: res });
+  if (!isBrowser) {
+    let CS_Interface = new CSInterface()
+      return new Promise((resolve, reject) => {
+        CS_Interface.evalScript(`${text}`, res => {
+          if (res) resolve(isJson(res) ? JSON.parse(res) : res);
+          else reject({ error: res });
+        });
       });
-    });
+  }
   else return defs;
 }
 
@@ -48,10 +50,10 @@ function loadScript(path) {
   if (isBrowser) return null;
   // Correctly execute regardless of whether Animate or regular CEP app
   if (!/FLPR/.test(spy.appName))
-    window.__adobe_cep__.evalScript(`$.evalFile('${fspath.resolve(path)}')`);
+    evalScript(`$.evalFile('${fspath.resolve(path)}')`);
   // Thanks to @adamplouff for below
   else
-    window.__adobe_cep__.evalScript(
+    evalScript(
       `fl.runScript(FLfile.platformPathToURI("${fspath.resolve(path)}"))`
     );
 }
@@ -70,9 +72,10 @@ function isJson(str) {
 // Currently requires CSInterface be preloaded for CSEvent class
 function dispatchEvent(name, data) {
   if (isBrowser) return null;
+  let CS_Interface = new CSInterface();
   var event = new CSEvent(name, "APPLICATION");
   event.data = data;
-  window.__adobe_cep__.dispatchEvent(event);
+  CSInterface.dispatchEvent(event);
 }
 
 // Should replace this with node's native fs to port into future UXP framework
@@ -80,7 +83,7 @@ function makeDir(root) {
   if (isBrowser) return null;
   window.cep.fs.readFile(decodeURI(root).replace(/file\:\/{1,}/, "")).err
     ? new Promise((resolve, reject) => {
-        window.__adobe_cep__.evalScript(
+        evalScript(
           `var folder = new Folder(${decodeURI(root)});
           if (!folder.exists) {
             var parts = root.split("/");
