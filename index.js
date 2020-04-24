@@ -13,8 +13,8 @@ function openDialog(title, isFolder = false) {
   return menu.err
     ? { err: menu.err, path: null }
     : menu.data.length
-    ? { err: null, path: fspath.resolve(menu.data[0]) }
-    : { err: "Canceled", path: null };
+      ? { err: null, path: fspath.resolve(menu.data[0]) }
+      : { err: "Canceled", path: null };
 }
 
 function openURL(url) {
@@ -32,8 +32,8 @@ function saveDialog(title, filetypes) {
   return menu.err
     ? { err: menu.err, path: null }
     : menu.data.length
-    ? { err: null, path: fspath.resolve(menu.data) }
-    : { err: "Canceled", path: null };
+      ? { err: null, path: fspath.resolve(menu.data) }
+      : { err: "Canceled", path: null };
 }
 
 // Promisified wrapper around CSInterface.evalScript
@@ -42,12 +42,12 @@ function saveDialog(title, filetypes) {
 async function evalScript(text, defs = {}) {
   if (!isBrowser) {
     let CS_Interface = new CSInterface()
-      return new Promise((resolve, reject) => {
-        CS_Interface.evalScript(`${text}`, res => {
-          if (res) resolve(isJson(res) ? JSON.parse(res) : res);
-          else reject({ error: res });
-        });
+    return new Promise((resolve, reject) => {
+      CS_Interface.evalScript(`${text}`, res => {
+        if (res) resolve(isJson(res) ? JSON.parse(res) : res);
+        else if (res.length) reject({ error: res });
       });
+    });
   }
   else return defs;
 }
@@ -90,19 +90,19 @@ function makeDir(root) {
   if (isBrowser) return null;
   window.cep.fs.readFile(decodeURI(root).replace(/file\:\/{1,}/, "")).err
     ? new Promise((resolve, reject) => {
-        evalScript(
-          `var folder = new Folder(${decodeURI(root)});
+      evalScript(
+        `var folder = new Folder(${decodeURI(root)});
           if (!folder.exists) {
             var parts = root.split("/");
             parts.pop();
             mkdir(parts.join("/"));
             folder.create();
           }`,
-          resolve(true)
-        );
-      }).catch(err => {
-        reject(err);
-      })
+        resolve(true)
+      );
+    }).catch(err => {
+      reject(err);
+    })
     : null;
 }
 
