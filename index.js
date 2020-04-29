@@ -40,10 +40,11 @@ function saveDialog(title, filetypes) {
 // Returns a promise/thenable object which is pre-parsed if JSON
 // If not in a CEP panel (and in browser/panelify, return second param as result)
 async function evalScript(text, defs = {}) {
+  let params = isJson(text) ? JSON.stringify(text) : text;
   if (!isBrowser) {
     let CS_Interface = new CSInterface()
     return new Promise((resolve, reject) => {
-      CS_Interface.evalScript(`${text}`, res => {
+      CS_Interface.evalScript(`${params}`, res => {
         if (res) resolve(isJson(res) ? JSON.parse(res) : res);
         else if (res.length) reject({ error: res });
       });
