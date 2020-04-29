@@ -39,8 +39,8 @@ function saveDialog(title, filetypes) {
 // Promisified wrapper around CSInterface.evalScript
 // Returns a promise/thenable object which is pre-parsed if JSON
 // If not in a CEP panel (and in browser/panelify, return second param as result)
-async function evalScript(text, defs = {}) {
-  let params = isJson(text) ? JSON.stringify(text) : text;
+async function evalScript(text, defs = {}, autoparse = false) {
+  let params = autoparse ? convertJSON(text) ? convertJSON(text) : text : text;
   if (!isBrowser) {
     let CS_Interface = new CSInterface()
     return new Promise((resolve, reject) => {
@@ -74,6 +74,12 @@ function isJson(str) {
     return false;
   }
   return true;
+}
+
+// Would love to get an autoparsing JSON parameters event up and running...
+function convertJSON(text) {
+  // console.log(text)
+  return false;
 }
 
 // Should get this working -- native CSEvent dispatch and listeners
