@@ -53,6 +53,23 @@ async function evalScript(text, defs = {}, autoparse = false) {
   else return defs;
 }
 
+
+function copy(text) {
+  var textarea = document.createElement('textarea');
+  textarea.textContent = text;
+  document.body.appendChild(textarea);
+  var selection = document.getSelection();
+  var range = document.createRange();
+  range.selectNode(textarea);
+  selection.removeAllRanges();
+  selection.addRange(range);
+  let clipboard = document.execCommand('copy')
+  console.log('copied:', clipboard);
+  selection.removeAllRanges();
+  document.body.removeChild(textarea);
+  return clipboard;
+}
+
 // Loads/executes .jsx script into memory from any path
 function loadScript(path) {
   if (isBrowser) return null;
@@ -164,6 +181,7 @@ export {
   rgbToHex,
   makeDir,
   readDir,
+  copy,
   openURL,
   writeFile,
   dispatchEvent
