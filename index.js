@@ -58,14 +58,20 @@ function copy(text) {
   var textarea = document.createElement('textarea');
   textarea.textContent = text;
   document.body.appendChild(textarea);
-  var selection = document.getSelection();
-  var range = document.createRange();
-  range.selectNode(textarea);
-  selection.removeAllRanges();
-  selection.addRange(range);
-  let clipboard = document.execCommand('copy')
+  let clipboard;
+  if (window.__adobe_cep__) {
+    textarea.select();
+    clipboard = document.execCommand('copy')
+  } else {
+    var selection = document.getSelection();
+    var range = document.createRange();
+    range.selectNode(textarea);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    clipboard = document.execCommand('copy')
+    selection.removeAllRanges();
+  }
   console.log('copied:', clipboard);
-  selection.removeAllRanges();
   document.body.removeChild(textarea);
   return clipboard;
 }
