@@ -13,15 +13,13 @@ function openDialog(title, isFolder = false) {
   return menu.err
     ? { err: menu.err, path: null }
     : menu.data.length
-      ? { err: null, path: fspath.resolve(menu.data[0]) }
-      : { err: "Canceled", path: null };
+    ? { err: null, path: fspath.resolve(menu.data[0]) }
+    : { err: "Canceled", path: null };
 }
 
 function openURL(url) {
-  if (window.__adobe_cep__)
-    cep.util.openURLInDefaultBrowser(url)
-  else
-    window.open(url)
+  if (window.__adobe_cep__) cep.util.openURLInDefaultBrowser(url);
+  else window.open(url);
 }
 
 // Opens a native save dialog and returns the target file
@@ -32,46 +30,45 @@ function saveDialog(title, filetypes) {
   return menu.err
     ? { err: menu.err, path: null }
     : menu.data.length
-      ? { err: null, path: fspath.resolve(menu.data) }
-      : { err: "Canceled", path: null };
+    ? { err: null, path: fspath.resolve(menu.data) }
+    : { err: "Canceled", path: null };
 }
 
 // Promisified wrapper around CSInterface.evalScript
 // Returns a promise/thenable object which is pre-parsed if JSON
 // If not in a CEP panel (and in browser/panelify, return second param as result)
-async function evalScript(text, defs = {}, autoparse = false) {
-  let params = autoparse ? convertJSON(text) ? convertJSON(text) : text : text;
+async function evalScript(text, defs = {}) {
   if (!isBrowser) {
-    let CS_Interface = new CSInterface()
+    let CS_Interface = new CSInterface();
     return new Promise((resolve, reject) => {
-      CS_Interface.evalScript(`${params}`, res => {
-        if (res) resolve(isJson(res) ? JSON.parse(res) : res);
-        else if (res.length) reject({ error: res });
+      CS_Interface.evalScript(`${text}`, (res) => {
+        // For some reason this was returning errors in InDesign alone. No idea why
+        resolve(isJson(res) ? JSON.parse(res) : res);
+        // if (res) resolve(isJson(res) ? JSON.parse(res) : res);
+        // else if (res.length) reject({ error: res });
       });
     });
-  }
-  else return defs;
+  } else return defs;
 }
 
-
 function copy(text) {
-  var textarea = document.createElement('textarea');
+  var textarea = document.createElement("textarea");
   textarea.textContent = text;
   document.body.appendChild(textarea);
   let clipboard;
   if (window.__adobe_cep__) {
     textarea.select();
-    clipboard = document.execCommand('copy')
+    clipboard = document.execCommand("copy");
   } else {
     var selection = document.getSelection();
     var range = document.createRange();
     range.selectNode(textarea);
     selection.removeAllRanges();
     selection.addRange(range);
-    clipboard = document.execCommand('copy')
+    clipboard = document.execCommand("copy");
     selection.removeAllRanges();
   }
-  console.log('copied:', clipboard);
+  console.log("copied:", clipboard);
   document.body.removeChild(textarea);
   return clipboard;
 }
@@ -120,19 +117,19 @@ function makeDir(root) {
   if (isBrowser) return null;
   window.cep.fs.readFile(decodeURI(root).replace(/file\:\/{1,}/, "")).err
     ? new Promise((resolve, reject) => {
-      evalScript(
-        `var folder = new Folder(${decodeURI(root)});
+        evalScript(
+          `var folder = new Folder(${decodeURI(root)});
           if (!folder.exists) {
             var parts = root.split("/");
             parts.pop();
             mkdir(parts.join("/"));
             folder.create();
           }`,
-        resolve(true)
-      );
-    }).catch(err => {
-      reject(err);
-    })
+          resolve(true)
+        );
+      }).catch((err) => {
+        reject(err);
+      })
     : null;
 }
 
@@ -147,7 +144,7 @@ async function readDir(path) {
 
 async function writeFile(path, data) {
   return new Promise((resolve, reject) => {
-    fs.writeFile(fspath.resolve(path), data, err => {
+    fs.writeFile(fspath.resolve(path), data, (err) => {
       if (err) reject(err);
       resolve(true);
     });
@@ -166,10 +163,10 @@ async function writeFile(path, data) {
 function rgbToHex(val, hashed = true) {
   while (val.length > 3) val.pop();
   return `${hashed ? "#" : ""}${val
-    .map(c => {
+    .map((c) => {
       return /AEFT/.test(spy.appName) ? (c * 255).toFixed(0) : c;
     })
-    .map(c => {
+    .map((c) => {
       c = c < 256 ? Math.abs(c).toString(16) : 0;
       return c.length < 2 ? `0${c}` : c;
     })
@@ -190,5 +187,5 @@ export {
   copy,
   openURL,
   writeFile,
-  dispatchEvent
+  dispatchEvent,
 };
