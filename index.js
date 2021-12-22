@@ -86,16 +86,6 @@ function loadScript(path) {
     );
 }
 
-// Determine if the current String is JSON notation
-function isJson(str) {
-  try {
-    JSON.parse(str);
-  } catch (e) {
-    return false;
-  }
-  return true;
-}
-
 // Would love to get an autoparsing JSON parameters event up and running...
 function convertJSON(text) {
   // console.log(text)
