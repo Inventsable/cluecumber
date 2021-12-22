@@ -51,6 +51,15 @@ async function evalScript(text, defs = {}) {
   } else return defs;
 }
 
+function isJson(str) {
+  try {
+    let test = JSON.parse(str);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
 function copy(text) {
   var textarea = document.createElement("textarea");
   textarea.textContent = text;

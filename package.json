@@ -1,6 +1,6 @@
 {
   "name": "cluecumber",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Various helper functions for Adobe CEP scripting to bridge the gap between panel JS and host app JSX.",
   "main": "index.js",
   "scripts": {
